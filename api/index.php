@@ -26,9 +26,9 @@
         // Use a try-catch block to handle potential exceptions
         try {
             $logger = new IpLogger();
-            $filePath = __DIR__ . '/../ipsLog.txt';
+            $filePath = __DIR__ . '/../ipsLog.txt'; // Corrected path to ipsLog.txt
             error_log("Logging to file: " . $filePath);
-            $logger->write($filePath, 'Europe/Athens'); // Corrected path to ipsLog.txt
+            $logger->write($filePath, 'Europe/Athens');
         } catch (Exception $e) {
             // Log the error to PHP's error log
             error_log("Error logging IP: " . $e->getMessage());
