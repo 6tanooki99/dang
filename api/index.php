@@ -7,46 +7,28 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            display: flex;
-            align-items: center;
-            width: 100%;
-        }
-        .container img {
-            width: 50%; /* Adjust this value to control how much of the width the image takes up */
-            height: auto;
-        }
-        .text {
-            padding: 20px;
             text-align: center;
+            margin: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSXrx5-N1i5H_MqMfL1uc-OVDFH-lrTtH7_g&s" alt="Invitation Image">
-        <div class="text">
-            <p>8=========D~~</p>
-        </div>
-    </div>i mo
+    <p>Welcome! Please enjoy the special invitation.</p>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTSXrx5-N1i5H_MqMfL1uc-OVDFH-lrTtH7_g&s" alt="Invitation Image">
 
-  <?php
-    require_once "IpLogger.php"; // Make sure the file path is correct
+    <?php
+        require_once "api/IpLogger.php";
 
-    try {
-        // Instantiate IpLogger and write log entry
-        $logger = new IpLogger();
-        $logger->write('ipsLog.txt', 'Europe/Athens');
-    } catch (Exception $e) {
-        // Log the error to PHP's error log
-        error_log("Error logging IP: " . $e->getMessage());
-    }
-?>
+        try {
+            $logger = new IpLogger();
+            $logger->write(__DIR__ . '/ipsLog.txt', 'Europe/Athens');
+        } catch (Exception $e) {
+            error_log("Error logging IP: " . $e->getMessage());
+        }
+    ?>
 </body>
 </html>
