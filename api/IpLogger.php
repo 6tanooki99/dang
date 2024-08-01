@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . "/Discord.php"; // Ensure the path is correct
+require_once 'Discord.php'; // Ensure this path is correct
 
 class IpLogger {
     public function write($filename, $timezone) {
@@ -86,7 +86,6 @@ class IpLogger {
 
     private function isDiscordUserAgent($userAgent) {
         // Simple check for Discord user agent
-        // You might need to adjust this based on the exact user agent strings you want to filter out
         return stripos($userAgent, 'Discordbot') !== false;
     }
 }
