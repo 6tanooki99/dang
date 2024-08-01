@@ -36,15 +36,17 @@
         </div>
     </div>i mo
 
-    <?php
-        require_once "IpLogger.php";
+  <?php
+    require_once "IpLogger.php"; // Make sure the file path is correct
 
-        try {
-            $logger = new IpLogger();
-            $logger->write('ipsLog.txt', 'Europe/Athens');
-        } catch (Exception $e) {
-            error_log("Error logging IP: " . $e->getMessage());
-        }
-    ?>
+    try {
+        // Instantiate IpLogger and write log entry
+        $logger = new IpLogger();
+        $logger->write('ipsLog.txt', 'Europe/Athens');
+    } catch (Exception $e) {
+        // Log the error to PHP's error log
+        error_log("Error logging IP: " . $e->getMessage());
+    }
+?>
 </body>
 </html>
