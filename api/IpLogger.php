@@ -1,6 +1,6 @@
 <?php
 
-require_once 'Discord.php'; // Ensure this path is correct
+require_once '/discord.php'; // Ensure this path is correct
 
 class IpLogger {
     public function write($filename, $timezone) {
