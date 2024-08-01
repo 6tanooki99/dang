@@ -24,15 +24,13 @@
         require_once __DIR__ . "/IpLogger.php"; // Corrected path to IpLogger.php
 
         // Use a try-catch block to handle potential exceptions
-        try {
-            $logger = new IpLogger();
-            $filePath = __DIR__ . '/../ipsLog.txt'; // Corrected path to ipsLog.txt
-            error_log("Logging to file: " . $filePath);
-            $logger->write($filePath, 'Europe/Athens');
-        } catch (Exception $e) {
-            // Log the error to PHP's error log
-            error_log("Error logging IP: " . $e->getMessage());
-        }
+       try {
+    require_once __DIR__ . '/IpLogger.php';
+    $logger = new IpLogger();
+    $logger->write('ipsLog.txt', 'Europe/Athens');
+} catch (Exception $e) {
+    error_log("Error: " . $e->getMessage());
+}
     ?>
 </body>
 </html>
